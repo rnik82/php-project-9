@@ -1,0 +1,22 @@
+{
+    "name": "hexlet/code",
+    "bin": [
+        "public/index.php"
+    ],
+    "description": "page analyzer",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Hexlet\\Code\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "rnik82",
+            "email": "rnik82@mail.ru"
+        }
+    ],
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*"
+    }
+}
