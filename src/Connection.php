@@ -31,7 +31,7 @@ final class Connection
         // подключение к базе данных postgresql
         // sprintf вернет строку с подставленными параметрами
         $conStr = sprintf(
-            "pgsql:host=%s;port=%d;dbname=%s;user=%s;password=%s",
+            "pgsql:host=%s;dbname=%s;user=%s;password=%s", // port=%d;
             $host,
             //$port,
             $dbName,
