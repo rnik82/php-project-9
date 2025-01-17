@@ -60,7 +60,7 @@ function getNormalisedUrl(string $url): string
 
 $app->get('/', function ($request, $response) {
     $viewData = [
-        'url' => [],
+        'url' => ['name' => ''],
         'errors' => [],
     ];
     return $this->get('renderer')->render($response, 'index.phtml', $viewData);
