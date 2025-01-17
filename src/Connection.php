@@ -46,7 +46,7 @@ final class Connection
     }
 
     /**
-     * возврат экземпляра объекта Connection
+     * Возврат экземпляра объекта Connection
      * тип @return
      */
     public static function get()

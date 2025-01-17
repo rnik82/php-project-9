@@ -59,10 +59,12 @@ function getNormalisedUrl(string $url): string
 }
 
 $app->get('/', function ($request, $response) {
-
-    return $this->get('renderer')->render($response, 'index.phtml');
+    $viewData = [
+        'url' => [],
+        'errors' => [],
+    ];
+    return $this->get('renderer')->render($response, 'index.phtml', $viewData);
 })->setName('index');
-
 
 $app->post('/urls', function ($request, $response) use ($router) {
     
@@ -137,7 +139,7 @@ $app->get('/urls', function ($request, $response) {
     $urls = $urlRepository->getEntities(); // асс массив всех url
 
     $viewData = [
-      'urls' => $urls,
+        'urls' => $urls,
     ];
 
     return $this->get('renderer')->render($response, 'urls.phtml', $viewData);
