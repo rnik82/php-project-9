@@ -21,6 +21,7 @@ final class Connection
     public function create(string $url)
     {
         $databaseUrl = parse_url($url);
+        //dump($databaseUrl);
         $username = $databaseUrl['user']; // username
         $password = $databaseUrl['pass']; // password
         $host = $databaseUrl['host']; // localhost
