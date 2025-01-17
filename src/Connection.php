@@ -13,12 +13,7 @@ final class Connection
      */
     private static ?Connection $conn = null;
 
-    /**
-     * Подключение к базе данных и возврат экземпляра объекта \PDO
-     * @return \PDO
-     * @throws \Exception
-     */
-    public function create(string $url)
+    public function create(string $url): \PDO
     {
         $databaseUrl = parse_url($url);
         //dump($databaseUrl);

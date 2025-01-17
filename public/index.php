@@ -72,7 +72,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
 
     $urlData = $request->getParsedBodyParam('url'); // это просто асс массив, типа ["name" => "https://mail.ru/"]
 
-    $urlName = getNormalisedUrl($urlData['name']);
+    $urlName = $urlData['name'];
     //dump($urlName);
     
     $validator = new Validator(['currentUrl' => $urlName]);
@@ -81,7 +81,8 @@ $app->post('/urls', function ($request, $response) use ($router) {
     $validator->mapFieldRules('currentUrl', $rules);
 
     if ($validator->validate()) {
-        $url = $urlRepository->findByName($urlName);
+        $normalisedName = getNormalisedUrl($urlName);
+        $url = $urlRepository->findByName($normalisedName);
         if ($url) { // 'Страница уже существует'
             $this->get('flash')->addMessage('success', 'Страница уже существует');
             $id = $url->getId();
@@ -89,7 +90,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
         }
 
         $created_at = Carbon::now();
-        $newUrl = Url::fromArray([$urlName, $created_at]); // объект Url
+        $newUrl = Url::fromArray([$normalisedName, $created_at]); // объект Url
         $urlRepository->save($newUrl);
 
         $this->get('flash')->addMessage('success', "Страница успешно добавлена");
