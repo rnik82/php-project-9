@@ -25,7 +25,9 @@ final class Connection
         $username = $databaseUrl['user']; // username
         $password = $databaseUrl['pass']; // password
         $host = $databaseUrl['host']; // localhost
+        //dump($host);
         $port = $databaseUrl['port']; // 5432
+        //dump($port);
         $dbName = ltrim($databaseUrl['path'], '/'); // dbname
 
         // подключение к базе данных postgresql
