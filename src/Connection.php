@@ -26,7 +26,7 @@ final class Connection
         $password = $databaseUrl['pass']; // password
         $host = $databaseUrl['host']; // localhost
         //dump($host);
-        $port = $databaseUrl['port']; // 5432
+        $port = $databaseUrl['port']; // 5432 (3306)
         //dump($port);
         $dbName = ltrim($databaseUrl['path'], '/'); // dbname
 
