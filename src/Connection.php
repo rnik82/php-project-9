@@ -25,9 +25,7 @@ final class Connection
         $username = $databaseUrl['user']; // username
         $password = $databaseUrl['pass']; // password
         $host = $databaseUrl['host']; // localhost
-        //dump($host);
-        $port = $databaseUrl['port']; // 5432 (3306)
-        //dump($port);
+        //$port = $databaseUrl['port']; // 5432
         $dbName = ltrim($databaseUrl['path'], '/'); // dbname
 
         // подключение к базе данных postgresql
@@ -35,7 +33,7 @@ final class Connection
         $conStr = sprintf(
             "pgsql:host=%s;port=%d;dbname=%s;user=%s;password=%s",
             $host,
-            $port,
+            //$port,
             $dbName,
             $username,
             $password
