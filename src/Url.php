@@ -47,8 +47,8 @@ class Url
         $this->created_at = $created_at;
     }
 
-    public function exists(): bool
-    {
-        return !is_null($this->getId());
-    }
+    // public function exists(): bool
+    // {
+    //     return !is_null($this->getId());
+    // }
 }

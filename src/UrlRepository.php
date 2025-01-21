@@ -18,8 +18,12 @@ class UrlRepository
         $stmt = $this->conn->query($sql);
 
         while ($row = $stmt->fetch()) {
-            //$url = Url::fromArray([$row['name'], $row['created_at']]);
-            //$url->setId($row['id']);
+
+            // $checksRepository = $this->get(UrlChecksRepository::class);
+            // $checks = $checksRepository->getEntities();
+
+            // $url = Url::fromArray([$row['name'], $row['created_at']]);
+            // $url->setId($row['id']);
             $url = ['id' => $row['id'], 'name' => $row['name'], 'created_at' => $row['created_at']];
             $urls[] = $url;
         }
@@ -27,14 +31,15 @@ class UrlRepository
         return $urls;
     }
 
-    public function findById(int $id): ?Url
+    public function findById(int $id): ?array
     {
         $sql = "SELECT * FROM urls WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
         if ($row = $stmt->fetch())  { // $row - асс массив либо false
-            $url = Url::fromArray([$row['name'], $row['created_at']]);
-            $url->setId($row['id']);
+            // $url = Url::fromArray([$row['name'], $row['created_at']]);
+            // $url->setId($row['id']);
+            $url = ['id' => $row['id'], 'name' => $row['name'], 'created_at' => $row['created_at']];
             return $url;
         }
 

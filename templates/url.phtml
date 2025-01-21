@@ -34,7 +34,7 @@
                 </table>
             </div>
         <h2 class="mt-5 mb-3">Проверки</h2>
-        <form method="post" action="/urls/2/checks">
+        <form method="post" action="/urls/<?= $url['id'] ?>/checks">
             <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
         <table class="table table-bordered table-hover" data-test="checks">
@@ -50,7 +50,14 @@
             </thead>
             <tbody>
                 <?php foreach ($checks as $check): ?>
-
+                    <tr>
+                        <td><?= $check['id'] ?></td>
+                        <td>Тут будет Код ответа</td>
+                        <td class="text-break">Тут будет h1</td>
+                        <td class="text-break">Тут будет title</td>
+                        <td class="text-break">Тут будет description</td>
+                        <td><?= $check['created_at'] ?></td>
+                    </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>

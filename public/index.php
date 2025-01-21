@@ -8,6 +8,8 @@ use DI\Container;
 use Hexlet\Code\Connection;
 use Hexlet\Code\UrlRepository;
 use Hexlet\Code\Url;
+use Hexlet\Code\UrlChecksRepository;
+use Hexlet\Code\Check;
 use Carbon\Carbon; // -
 use Dotenv\Dotenv;
 // + Slim/Middleware/methodOverrideiddleware
@@ -46,7 +48,7 @@ $router = $app->getRouteCollector()->getRouteParser();
 //Устанавливаем middleware для обработки ошибок
 $app->addErrorMiddleware(true, true, true);
 
-// Включаем поддержку переопределения метода в Slim
+// Включаем поддержку переопределения метода в Slim, чтобы, например, в html можно было исп-ть pаtch (а не только get и post)
 // $app->add(MethodOverrideMiddleware::class);
 
 // Старт PHP сессии для пакета slim/flash
@@ -125,8 +127,17 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 
     $messages = $this->get('flash')->getMessages();
 
+    $checksRepository = $this->get(UrlChecksRepository::class);
+
+    //dump($checksRepository->getEntities());
+
+    // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1], ['id' => $id2, 'created_at' => $created_at2], ...]
+    $checks = $checksRepository->findChecksByUrlId($id);
+    //dump($checks);
+
     $params = [
-        'url' => ['id' => $url->getId(),'name' => $url->getName(), 'created_at' => $url->getCreatedAt()],
+        'url' => $url,
+        'checks' => $checks,
         'flash' => $messages
     ];
 
@@ -134,16 +145,50 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 })->setName('urls.show');
 
 
+$app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($router) {
+    
+    $url_id = $args['url_id'];
+    $created_at = Carbon::now();
+
+    $checksRepository = $this->get(UrlChecksRepository::class);
+
+    $newCheck = Check::fromArray([$url_id, $created_at]); // объект Check
+    //dump($newCheck);
+
+    //dump('before save in post');
+    $checksRepository->save($newCheck); // сохраняем в БД
+
+    //dump($checksRepository->getEntities());
+
+    $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+
+    $url = $router->urlFor('urls.show', ['id' => $url_id]);
+    return $response->withRedirect($url);
+});
+
+
 $app->get('/urls', function ($request, $response) {
 
     $urlRepository = $this->get(UrlRepository::class);
     $urls = $urlRepository->getEntities(); // асс массив всех url
 
+    $checksRepository = $this->get(UrlChecksRepository::class);
+    $checks = $checksRepository->getEntities(); // асс массив всех checks
+
+    $updatedUrls = array_map(
+        function ($url) use ($checksRepository, $checks) {
+            $urlId = $url['id'];
+            $url_check_date = $checksRepository->getLatestCheck($checks, $urlId); // ["url_check_date" => "2025-01-21 19:17:27"]
+            return [...$url, ...$url_check_date];
+        }, $urls
+    );
+
     $viewData = [
-        'urls' => $urls,
+        'urls' => $updatedUrls,
     ];
 
     return $this->get('renderer')->render($response, 'urls.phtml', $viewData);
 })->setName('urls.index');
+
 
 $app->run();
