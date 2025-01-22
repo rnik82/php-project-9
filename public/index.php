@@ -190,8 +190,11 @@ $app->get('/urls', function ($request, $response) {
         function ($url) use ($checksRepository) {
             $urlId = $url['id'];
             $url_check_info = $checksRepository->getLatestCheckInfo($urlId); // ["url_check_date" => "2025-01-21 19:17:27", "url_check_status_code" => "200"]
+            $url_check_info_upd = $url_check_info === [] 
+                ? ["url_check_date" => "", "url_check_status_code" => ""] 
+                : $url_check_info;
 
-            return [...$url, ...$url_check_info];
+            return [...$url, ...$url_check_info_upd];
         }, $urls
     );
 
