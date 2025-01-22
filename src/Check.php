@@ -6,7 +6,7 @@ class Check
 {
     private ?int $id = null;
     private ?int $url_id = null;
-    // private ?int $status_code = null;
+    private ?string $status_code = null; // добавить код ниже
     // private ?string $h1 = null;
     // private ?string $title = null;
     // private ?string $description = null;
@@ -14,11 +14,12 @@ class Check
 
     public static function fromArray(array $checkData): Check
     {
-        [$url_id, $created_at] = $checkData;
+        [$url_id, $created_at, $status_code] = $checkData;
         $check = new Check();
         $check->setUrlId($url_id);
         $check->setCreatedAt($created_at);
-        //$check->setStatusCode($status_code) and so on
+        $check->setStatusCode($status_code);
+        //$check->setDescription($description) and so on
         
         return $check;
     }
@@ -38,6 +39,11 @@ class Check
         return $this->created_at;
     }
 
+    public function getStatusCode(): ?string
+    {
+        return $this->status_code;
+    }
+
     public function setId(int $id): void
     {
         $this->id = $id;
@@ -51,6 +57,11 @@ class Check
     public function setCreatedAt(string $created_at): void
     {
         $this->created_at = $created_at;
+    }
+
+    public function setStatusCode(string $status_code): void
+    {
+        $this->status_code = $status_code;
     }
 
     // public function exists(): bool

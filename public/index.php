@@ -10,8 +10,10 @@ use Hexlet\Code\UrlRepository;
 use Hexlet\Code\Url;
 use Hexlet\Code\UrlChecksRepository;
 use Hexlet\Code\Check;
-use Carbon\Carbon; // -
+use Carbon\Carbon;
 use Dotenv\Dotenv;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 // + Slim/Middleware/methodOverrideiddleware
 
 // localhost:8080
@@ -131,7 +133,7 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 
     //dump($checksRepository->getEntities());
 
-    // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1], ['id' => $id2, 'created_at' => $created_at2], ...]
+    // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1, 'status_code' => status_code1], ['id' => $id2, ...]]
     $checks = $checksRepository->findChecksByUrlId($id);
     //dump($checks);
 
@@ -150,20 +152,29 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($
     $url_id = $args['url_id'];
     $created_at = Carbon::now();
 
+    $urlRepository = $this->get(UrlRepository::class);
+    $url = $urlRepository->findById($url_id);
+    $name = $url['name'];
+
+    $client = new Client();
+
+    try {
+        $res = $client->request('GET', $name); // 'https://example.com/api/resource'
+        $status_code = $res->getStatusCode();
+    } catch (ConnectException $e) {
+        echo "Connect error: " . $e->getMessage();
+    }
+
     $checksRepository = $this->get(UrlChecksRepository::class);
 
-    $newCheck = Check::fromArray([$url_id, $created_at]); // объект Check
-    //dump($newCheck);
+    $newCheck = Check::fromArray([$url_id, $created_at, $status_code]); // получаем объект Check при каждом нажатии "Запустить проверку"
 
-    //dump('before save in post');
-    $checksRepository->save($newCheck); // сохраняем в БД
-
-    //dump($checksRepository->getEntities());
+    $checksRepository->save($newCheck);
 
     $this->get('flash')->addMessage('success', 'Страница успешно проверена');
 
-    $url = $router->urlFor('urls.show', ['id' => $url_id]);
-    return $response->withRedirect($url);
+    //$url = $router->urlFor('urls.show', ['id' => $url_id]);
+    return $response->withRedirect($router->urlFor('urls.show', ['id' => $url_id]));
 });
 
 
@@ -173,13 +184,14 @@ $app->get('/urls', function ($request, $response) {
     $urls = $urlRepository->getEntities(); // асс массив всех url
 
     $checksRepository = $this->get(UrlChecksRepository::class);
-    $checks = $checksRepository->getEntities(); // асс массив всех checks
+    //$checks = $checksRepository->getEntities(); // асс массив всех checks
 
     $updatedUrls = array_map(
-        function ($url) use ($checksRepository, $checks) {
+        function ($url) use ($checksRepository) {
             $urlId = $url['id'];
-            $url_check_date = $checksRepository->getLatestCheck($checks, $urlId); // ["url_check_date" => "2025-01-21 19:17:27"]
-            return [...$url, ...$url_check_date];
+            $url_check_info = $checksRepository->getLatestCheckInfo($urlId); // ["url_check_date" => "2025-01-21 19:17:27", "url_check_status_code" => "200"]
+
+            return [...$url, ...$url_check_info];
         }, $urls
     );
 

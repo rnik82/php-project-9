@@ -18,10 +18,6 @@ class UrlRepository
         $stmt = $this->conn->query($sql);
 
         while ($row = $stmt->fetch()) {
-
-            // $checksRepository = $this->get(UrlChecksRepository::class);
-            // $checks = $checksRepository->getEntities();
-
             // $url = Url::fromArray([$row['name'], $row['created_at']]);
             // $url->setId($row['id']);
             $url = ['id' => $row['id'], 'name' => $row['name'], 'created_at' => $row['created_at']];
