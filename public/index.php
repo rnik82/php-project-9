@@ -105,8 +105,11 @@ $app->post('/urls', function ($request, $response) use ($router) {
         return $response->withRedirect($router->urlFor('urls.show', ['id' => $id]));
     }
 
-    $errors = $validator->errors(); // -> ["currentUrl" => [0 => "CurrentUrl is not a valid URL"]]
-    $errorMessages = $errors['currentUrl']; // ["CurrentUrl is required", "CurrentUrl is not a valid URL"]
+    // -> ["currentUrl" => [0 => "CurrentUrl is not a valid URL"]]
+    $errors = $validator->errors();
+
+    // ["CurrentUrl is required", "CurrentUrl is not a valid URL"]
+    $errorMessages = $errors['currentUrl'];
 
     $errorMessagesRu[0] = $errorMessages[0] === 'CurrentUrl is required'
         ? 'URL не должен быть пустым' : 'Некорректный URL';
@@ -119,7 +122,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
 });
 
 
-$app->get('/urls/{id}', function ($request, $response, $args) {
+$app->get('/urls/{id:[0-9]+}', function ($request, $response, $args) {
 
     $id = $args['id'];
     $urlRepository = $this->get(UrlRepository::class);
@@ -147,46 +150,49 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 })->setName('urls.show');
 
 
-$app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($router) {
+$app->post(
+    '/urls/{url_id:[0-9]+}/checks',
+    function ($request, $response, $args) use ($router) {
 
-    $url_id = $args['url_id'];
-    $created_at = Carbon::now();
+        $url_id = $args['url_id'];
+        $created_at = Carbon::now();
 
-    $urlRepository = $this->get(UrlRepository::class);
-    $url = $urlRepository->findById($url_id);
-    $urlName = $url['name'];
+        $urlRepository = $this->get(UrlRepository::class);
+        $url = $urlRepository->findById($url_id);
+        $urlName = $url['name'];
 
-    $client = new Client();
+        $client = new Client();
 
-    try {
-        $res = $client->request('GET', $urlName); // 'https://example.com/api/resource'
-    } catch (ConnectException $e) {
-        echo "Connect error: " . $e->getMessage();
+        try {
+            $res = $client->request('GET', $urlName); // 'https://example.com/api/resource'
+        } catch (ConnectException $e) {
+            echo "Connect error: " . $e->getMessage();
+        }
+        $status_code = $res->getStatusCode();
+        $html = (string) $res->getBody();
+
+        $document = new Document($html);
+
+        $h1 = optional($document->find('h1::text'))[0];
+        $title = optional($document->find('title::text'))[0];
+        $description = optional(
+            $document->find('meta[name=description][content]::attr(content)')
+        )[0];
+
+        $checksRepository = $this->get(UrlChecksRepository::class);
+
+        $newCheck = Check::fromArray( // получаем объект Check при каждом нажатии "Запустить проверку"
+            [$url_id, $created_at, $status_code, $h1, $title, $description]
+        );
+
+        $checksRepository->save($newCheck);
+
+        $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+
+        //$url = $router->urlFor('urls.show', ['id' => $url_id]);
+        return $response->withRedirect($router->urlFor('urls.show', ['id' => $url_id]));
     }
-    $status_code = $res->getStatusCode();
-    $html = (string) $res->getBody();
-
-    $document = new Document($html);
-
-    $h1 = optional($document->find('h1::text'))[0];
-    $title = optional($document->find('title::text'))[0];
-    $description = optional(
-        $document->find('meta[name=description][content]::attr(content)')
-    )[0];
-
-    $checksRepository = $this->get(UrlChecksRepository::class);
-
-    $newCheck = Check::fromArray( // получаем объект Check при каждом нажатии "Запустить проверку"
-        [$url_id, $created_at, $status_code, $h1, $title, $description]
-    );
-
-    $checksRepository->save($newCheck);
-
-    $this->get('flash')->addMessage('success', 'Страница успешно проверена');
-
-    //$url = $router->urlFor('urls.show', ['id' => $url_id]);
-    return $response->withRedirect($router->urlFor('urls.show', ['id' => $url_id]));
-});
+);
 
 
 $app->get('/urls', function ($request, $response) {
