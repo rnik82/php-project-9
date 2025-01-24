@@ -16,6 +16,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use DiDom\Document;
 use Illuminate\Support;
+
 // + Slim/Middleware/methodOverrideiddleware
 
 // localhost:8080
@@ -52,17 +53,12 @@ $router = $app->getRouteCollector()->getRouteParser();
 //Устанавливаем middleware для обработки ошибок
 $app->addErrorMiddleware(true, true, true);
 
-// Включаем поддержку переопределения метода в Slim, чтобы, например, в html можно было исп-ть pаtch (а не только get и post)
+// Включаем поддержку переопределения метода в Slim,
+//чтобы, например, в html можно было исп-ть pаtch (а не только get и post)
 // $app->add(MethodOverrideMiddleware::class);
 
 // Старт PHP сессии для пакета slim/flash
 session_start();
-
-function getNormalisedUrl(string $url): string
-{
-    $databaseUrl = parse_url($url);
-    return $databaseUrl['scheme'] . '://' . $databaseUrl['host'];
-}
 
 $app->get('/', function ($request, $response) {
     $viewData = [
@@ -73,25 +69,30 @@ $app->get('/', function ($request, $response) {
 })->setName('index');
 
 $app->post('/urls', function ($request, $response) use ($router) {
-    
+
     $urlRepository = $this->get(UrlRepository::class); // это объект
 
     $urlData = $request->getParsedBodyParam('url'); // это просто асс массив, типа ["name" => "https://mail.ru/"]
 
     $urlName = $urlData['name'];
-    
+
     $validator = new Validator(['currentUrl' => $urlName]);
     $rules = ['required','url', ['lengthMax', 255]];
-    
+
     $validator->mapFieldRules('currentUrl', $rules);
 
     if ($validator->validate()) {
-        $normalisedName = getNormalisedUrl($urlName);
+        $databaseUrl = parse_url($urlName);
+        $normalisedName = $databaseUrl['scheme'] . '://' . $databaseUrl['host'];
+
         $url = $urlRepository->findByName($normalisedName);
+
         if ($url) { // 'Страница уже существует'
             $this->get('flash')->addMessage('success', 'Страница уже существует');
             $id = $url->getId();
-            return $response->withRedirect($router->urlFor('urls.show', ['id' => $id]));
+            return $response->withRedirect(
+                $router->urlFor('urls.show', ['id' => $id])
+            );
         }
 
         $created_at = Carbon::now();
@@ -132,7 +133,8 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 
     $checksRepository = $this->get(UrlChecksRepository::class);
 
-    // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1, 'status_code' => status_code1, ...], ...]
+    // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1,
+    //'status_code' => status_code1, ...], ...]
     $checks = $checksRepository->findChecksByUrlId($id);
 
     $params = [
@@ -146,7 +148,7 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 
 
 $app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($router) {
-    
+
     $url_id = $args['url_id'];
     $created_at = Carbon::now();
 
@@ -199,13 +201,15 @@ $app->get('/urls', function ($request, $response) {
     $updatedUrls = array_map(
         function ($url) use ($checksRepository) {
             $urlId = $url['id'];
-            $url_check_info = $checksRepository->getLatestCheckInfo($urlId); // ["url_check_date" => "2025-01-21 19:17:27", "url_check_status_code" => "200"]
-            $url_check_info_upd = $url_check_info === [] 
-                ? ["url_check_date" => "", "url_check_status_code" => ""] 
+            // ["url_check_date" => "2025-01...", "url_check_status_code" => "200"]
+            $url_check_info = $checksRepository->getLatestCheckInfo($urlId);
+            $url_check_info_upd = $url_check_info === []
+                ? ["url_check_date" => "", "url_check_status_code" => ""]
                 : $url_check_info;
 
             return [...$url, ...$url_check_info_upd];
-        }, $urls
+        },
+        $urls
     );
 
     $viewData = [

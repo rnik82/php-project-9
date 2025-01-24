@@ -22,7 +22,7 @@ class Check
         $check->setH1($h1);
         $check->setTitle($title);
         $check->setDescription($description);
-        
+
         return $check;
     }
 

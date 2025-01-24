@@ -26,7 +26,7 @@ class UrlChecksRepository
         $description = $check->getDescription();
 
         $stmt = $this->conn->prepare($sql);
-    
+
         $stmt->bindParam(':url_id', $url_id);
         $stmt->bindParam(':created_at', $created_at);
         $stmt->bindParam(':status_code', $status_code);
@@ -34,7 +34,7 @@ class UrlChecksRepository
         $stmt->bindParam(':title', $title);
         $stmt->bindParam(':description', $description);
         $stmt->execute();
-        
+
         $id = (int) $this->conn->lastInsertId();
         $check->setId($id);
     }
@@ -46,7 +46,7 @@ class UrlChecksRepository
                 created_at as url_check_date
                 FROM url_checks
                 WHERE url_id = ?
-                ORDER BY url_id, created_at DESC";                
+                ORDER BY url_id, created_at DESC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
@@ -61,7 +61,7 @@ class UrlChecksRepository
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
 
-        while ($row = $stmt->fetch())  { // $row - асс массив либо false
+        while ($row = $stmt->fetch()) { // $row - асс массив либо false
             $check = [
                 'id' => $row['id'], 'created_at' => $row['created_at'],
                 'status_code' => $row['status_code'], 'h1' => $row['h1'],
@@ -82,7 +82,7 @@ class UrlChecksRepository
             $check = [
                 'id' => $row['id'],
                 'url_id' => $row['url_id'],
-                'created_at' => $row['created_at'], 
+                'created_at' => $row['created_at'],
                 'status_code' => $row['status_code'],
                 'h1' => $row['h1'],
                 'title' => $row['title'],

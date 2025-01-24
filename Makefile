@@ -14,12 +14,12 @@ update: # обновить зависимости
 validate: # проверяет файл composer.json на ошибки
 	composer validate
 
-lint:
-	composer exec --verbose phpcs -- --standard=PSR12 src tests
+lint: # убрал tests после src  в первой строке
+	composer exec --verbose phpcs -- --standard=PSR12 src public
 	composer exec --verbose phpstan
 
 lint-fix:
-	composer exec --verbose phpcbf -- --standard=PSR12 src tests
+	composer exec --verbose phpcbf -- --standard=PSR12 src public
 
 test:
 	composer exec --verbose phpunit tests
