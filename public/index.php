@@ -14,6 +14,8 @@ use Carbon\Carbon;
 use Dotenv\Dotenv;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use DiDom\Document;
+use Illuminate\Support;
 // + Slim/Middleware/methodOverrideiddleware
 
 // localhost:8080
@@ -77,7 +79,6 @@ $app->post('/urls', function ($request, $response) use ($router) {
     $urlData = $request->getParsedBodyParam('url'); // это просто асс массив, типа ["name" => "https://mail.ru/"]
 
     $urlName = $urlData['name'];
-    //dump($urlName);
     
     $validator = new Validator(['currentUrl' => $urlName]);
     $rules = ['required','url', ['lengthMax', 255]];
@@ -131,11 +132,8 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 
     $checksRepository = $this->get(UrlChecksRepository::class);
 
-    //dump($checksRepository->getEntities());
-
-    // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1, 'status_code' => status_code1], ['id' => $id2, ...]]
+    // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1, 'status_code' => status_code1, ...], ...]
     $checks = $checksRepository->findChecksByUrlId($id);
-    //dump($checks);
 
     $params = [
         'url' => $url,
@@ -154,20 +152,31 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) use ($
 
     $urlRepository = $this->get(UrlRepository::class);
     $url = $urlRepository->findById($url_id);
-    $name = $url['name'];
+    $urlName = $url['name'];
 
     $client = new Client();
 
     try {
-        $res = $client->request('GET', $name); // 'https://example.com/api/resource'
-        $status_code = $res->getStatusCode();
+        $res = $client->request('GET', $urlName); // 'https://example.com/api/resource'
     } catch (ConnectException $e) {
         echo "Connect error: " . $e->getMessage();
     }
+    $status_code = $res->getStatusCode();
+    $html = (string) $res->getBody();
+
+    $document = new Document($html);
+
+    $h1 = optional($document->find('h1::text'))[0];
+    $title = optional($document->find('title::text'))[0];
+    $description = optional(
+        $document->find('meta[name=description][content]::attr(content)')
+    )[0];
 
     $checksRepository = $this->get(UrlChecksRepository::class);
 
-    $newCheck = Check::fromArray([$url_id, $created_at, $status_code]); // получаем объект Check при каждом нажатии "Запустить проверку"
+    $newCheck = Check::fromArray( // получаем объект Check при каждом нажатии "Запустить проверку"
+        [$url_id, $created_at, $status_code, $h1, $title, $description]
+    );
 
     $checksRepository->save($newCheck);
 
@@ -182,6 +191,7 @@ $app->get('/urls', function ($request, $response) {
 
     $urlRepository = $this->get(UrlRepository::class);
     $urls = $urlRepository->getEntities(); // асс массив всех url
+    //dump($urls);
 
     $checksRepository = $this->get(UrlChecksRepository::class);
     //$checks = $checksRepository->getEntities(); // асс массив всех checks
