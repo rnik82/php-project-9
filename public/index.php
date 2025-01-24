@@ -164,9 +164,15 @@ $app->post(
         $client = new Client();
 
         try {
-            $res = $client->request('GET', $urlName); // 'https://example.com/api/resource'
+            $res = $client->request('GET', $urlName);
         } catch (ConnectException $e) {
-            echo "Connect error: " . $e->getMessage();
+            $this->get('flash')->addMessage(
+                'warning', 'Произошла ошибка при проверке, не удалось подключиться'
+            );
+            return $response
+                ->withRedirect($router->urlFor('urls.show', ['id' => $url_id]));
+            //return $response->withStatus(422);
+            //echo "Connect error: " . $e->getMessage();
         }
         $status_code = $res->getStatusCode();
         $html = (string) $res->getBody();
