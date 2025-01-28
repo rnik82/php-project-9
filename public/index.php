@@ -123,7 +123,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
         'url' => ['name' => $urlName],
         'errors' => $errorMessagesRu,
     ];
-    return $this->get('renderer')->render($response, "index.phtml", $viewData);
+    return $this->get('renderer')->render($response->withStatus(422), "index.phtml", $viewData);
 });
 
 
@@ -171,7 +171,6 @@ $app->post(
         $checksRepository = $this->get(UrlChecksRepository::class);
 
         try {
-            //dump("Before ClientException");
             $res = $client->request('GET', $urlName);
         } catch (ConnectException $e) {
 
@@ -180,13 +179,15 @@ $app->post(
 
             $checks = $checksRepository->findChecksByUrlId($url_id);
 
+            //dump($res->getStatusCode());
+
             $params = [
                 'url' => $url,
                 'checks' => $checks,
                 'flash' => $flashMessage,
             ];
 
-            return $this->get('renderer')->render($response->withStatus(422), 'url.phtml', $params);
+            return $this->get('renderer')->render($response, 'url.phtml', $params); //->withStatus(422)
             // return $response
             //     ->withRedirect($router->urlFor('urls.show', ['id' => $url_id]), 422);
             //echo "Connect error: " . $e->getMessage();
