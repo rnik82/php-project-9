@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS urls (
 
 CREATE TABLE IF NOT EXISTS url_checks (
     id SERIAL PRIMARY KEY,
-    url_id BIGINT,
-    status_code VARCHAR(255),
-    h1 VARCHAR(255),
-    title VARCHAR(255),
+    url_id BIGINT NOT NULL,
+    status_code VARCHAR(255) NULL,
+    h1 VARCHAR(255) NULL,
+    title TEXT NULL,
     description TEXT,
     created_at TIMESTAMP NOT NULL
 );

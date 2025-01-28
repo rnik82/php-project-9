@@ -26,11 +26,16 @@ require __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->safeLoad(); // теперь можно обратиться к добавленной через файл .env переменной, напр. $_ENV['DATABASE_URL']
 
+// Создаем контейнер
 $container = new Container();
+
+// Те объекты, кот. мы кладем в контейнер на этом этапе (renderer, flash и  т.д.) мы затем 
+// можем использовать в коде таким обр. - $this->get('renderer')->...
 $container->set('renderer', function () {
     // Параметром передается базовая директория, в которой будут храниться шаблоны
     return new PhpRenderer(__DIR__ . '/../templates');
 });
+
 $container->set('flash', function () {
     return new Messages();
 });
@@ -54,7 +59,7 @@ $router = $app->getRouteCollector()->getRouteParser();
 $app->addErrorMiddleware(true, true, true);
 
 // Включаем поддержку переопределения метода в Slim,
-//чтобы, например, в html можно было исп-ть pаtch (а не только get и post)
+// чтобы, например, в html можно было исп-ть pаtch (а не только get и post)
 // $app->add(MethodOverrideMiddleware::class);
 
 // Старт PHP сессии для пакета slim/flash
@@ -165,23 +170,22 @@ $app->post(
 
         $checksRepository = $this->get(UrlChecksRepository::class);
 
-
         try {
             $res = $client->request('GET', $urlName);
         } catch (ConnectException $e) {
-            $this->get('flash')->addMessage(
-                'warning', 'Произошла ошибка при проверке, не удалось подключиться'
-            );
-            $messages = $this->get('flash')->getMessages();
+            // $this->get('flash')->addMessage(
+            //     'warning', 'Произошла ошибка при проверке, не удалось подключиться'
+            // );
+            //$messages = $this->get('flash')->getMessages();
             $checks = $checksRepository->findChecksByUrlId($url_id);
 
             $params = [
                 'url' => $url,
                 'checks' => $checks,
-                'flash' => $messages
+                'flash' => ['warning' => ['Произошла ошибка при проверке, не удалось подключиться']],
             ];
 
-            return $this->get('renderer')->render($response->withStatus(422), 'url.phtml', $params); //->withStatus(422)
+            return $this->get('renderer')->render($response->withStatus(422), 'url.phtml', $params);
             // return $response
             //     ->withRedirect($router->urlFor('urls.show', ['id' => $url_id]), 422);
             //echo "Connect error: " . $e->getMessage();
