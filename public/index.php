@@ -171,18 +171,19 @@ $app->post(
         $checksRepository = $this->get(UrlChecksRepository::class);
 
         try {
+            //dump("Before ClientException");
             $res = $client->request('GET', $urlName);
         } catch (ConnectException $e) {
-            // $this->get('flash')->addMessage(
-            //     'warning', 'Произошла ошибка при проверке, не удалось подключиться'
-            // );
-            //$messages = $this->get('flash')->getMessages();
+
+            $flashMessage = ['warning'
+                => ['Произошла ошибка при проверке, не удалось подключиться']];
+
             $checks = $checksRepository->findChecksByUrlId($url_id);
 
             $params = [
                 'url' => $url,
                 'checks' => $checks,
-                'flash' => ['warning' => ['Произошла ошибка при проверке, не удалось подключиться']],
+                'flash' => $flashMessage,
             ];
 
             return $this->get('renderer')->render($response->withStatus(422), 'url.phtml', $params);
