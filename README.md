@@ -23,7 +23,7 @@ Demo: https://php-project-9-89yp.onrender.com
 
 ```bash
 make install
-make check
+make start
 ```
 Open in browser: http://localhost:8000
 
