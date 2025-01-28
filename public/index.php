@@ -15,16 +15,15 @@ use Dotenv\Dotenv;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use DiDom\Document;
-use Illuminate\Support;
+//use Illuminate\Support;
+//use Slim/Middleware/methodOverrideiddleware
 
-// + Slim/Middleware/methodOverrideiddleware
-
-// localhost:8080
 // Подключение автозагрузки через composer
 require __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->safeLoad(); // теперь можно обратиться к добавленной через файл .env переменной, напр. $_ENV['DATABASE_URL']
+$dotenv->safeLoad();
+// теперь можно обратиться к добавленной через файл .env переменной, напр. $_ENV['DATABASE_URL']
 
 // Создаем контейнер
 $container = new Container();
@@ -75,9 +74,10 @@ $app->get('/', function ($request, $response) {
 
 $app->post('/urls', function ($request, $response) use ($router) {
 
-    $urlRepository = $this->get(UrlRepository::class); // это объект
+    $urlRepository = $this->get(UrlRepository::class);
 
-    $urlData = $request->getParsedBodyParam('url'); // это просто асс массив, типа ["name" => "https://mail.ru/"]
+    // $urlData - это просто асс массив, типа ["name" => "https://mail.ru/"]
+    $urlData = $request->getParsedBodyParam('url');
 
     $urlName = $urlData['name'];
 
@@ -92,7 +92,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
 
         $url = $urlRepository->findByName($normalisedName);
 
-        if ($url) { // 'Страница уже существует'
+        if ($url) { // Eсли страница уже есть в репозитории то редирект
             $this->get('flash')->addMessage('success', 'Страница уже существует');
             $id = $url->getId();
             return $response->withRedirect(
@@ -100,9 +100,10 @@ $app->post('/urls', function ($request, $response) use ($router) {
             );
         }
 
+        // Если страницы нет, то сохраняем ее в Url репозитории и затем редирект
         $created_at = Carbon::now();
-        $newUrl = Url::fromArray([$normalisedName, $created_at]); // объект Url
-        $urlRepository->save($newUrl);
+        $newUrl = Url::fromArray([$normalisedName, $created_at]);
+        $urlRepository->save($newUrl); 
 
         $this->get('flash')->addMessage('success', "Страница успешно добавлена");
         $id = (string)$newUrl->getId();
@@ -110,10 +111,10 @@ $app->post('/urls', function ($request, $response) use ($router) {
         return $response->withRedirect($router->urlFor('urls.show', ['id' => $id]));
     }
 
-    // -> ["currentUrl" => [0 => "CurrentUrl is not a valid URL"]]
+    // $errors - массив типа ["currentUrl" => [0 => "CurrentUrl is not a valid URL"]]
     $errors = $validator->errors();
 
-    // ["CurrentUrl is required", "CurrentUrl is not a valid URL"]
+    // $errorMessages - либо массив типа ["CurrentUrl is not a valid URL"], либо []
     $errorMessages = $errors['currentUrl'] ?? ["currentUrl" => []];
 
     $errorMessagesRu[0] = $errorMessages[0] === 'CurrentUrl is required'
@@ -123,7 +124,8 @@ $app->post('/urls', function ($request, $response) use ($router) {
         'url' => ['name' => $urlName],
         'errors' => $errorMessagesRu,
     ];
-    return $this->get('renderer')->render($response->withStatus(422), "index.phtml", $viewData);
+    return $this->get('renderer')
+        ->render($response->withStatus(422), "index.phtml", $viewData);
 });
 
 
@@ -142,7 +144,7 @@ $app->get('/urls/{id:[0-9]+}', function ($request, $response, $args) {
     $checksRepository = $this->get(UrlChecksRepository::class);
 
     // $checks это либо [], либо типа [['id' => $id1, 'created_at' => $created_at1,
-    //'status_code' => status_code1, ...], ...]
+    // 'status_code' => status_code1, ...], ...]
     $checks = $checksRepository->findChecksByUrlId($id);
 
     $params = [
@@ -179,22 +181,16 @@ $app->post(
 
             $checks = $checksRepository->findChecksByUrlId($url_id);
 
-            //dump($res->getStatusCode());
-
             $params = [
                 'url' => $url,
                 'checks' => $checks,
                 'flash' => $flashMessage,
             ];
 
-            return $this->get('renderer')->render($response, 'url.phtml', $params); //->withStatus(422)
-            // return $response
-            //     ->withRedirect($router->urlFor('urls.show', ['id' => $url_id]), 422);
-            //echo "Connect error: " . $e->getMessage();
+            return $this->get('renderer')->render($response, 'url.phtml', $params);
         }
 
         $status_code = $res->getStatusCode();
-        //dump($status_code);
         $html = (string) $res->getBody();
 
         $document = new Document($html);
@@ -205,9 +201,8 @@ $app->post(
             $document->find('meta[name=description][content]::attr(content)')
         )[0];
 
-        //$checksRepository = $this->get(UrlChecksRepository::class);
-
-        $newCheck = Check::fromArray( // получаем объект Check при каждом нажатии "Запустить проверку"
+        // получаем объект Check ($newCheck) при каждом нажатии "Запустить проверку"
+        $newCheck = Check::fromArray(
             [$url_id, $created_at, $status_code, $h1, $title, $description]
         );
 
@@ -215,7 +210,6 @@ $app->post(
 
         $this->get('flash')->addMessage('success', 'Страница успешно проверена');
 
-        //$url = $router->urlFor('urls.show', ['id' => $url_id]);
         return $response->withRedirect($router->urlFor('urls.show', ['id' => $url_id]));
     }
 );
@@ -224,11 +218,10 @@ $app->post(
 $app->get('/urls', function ($request, $response) {
 
     $urlRepository = $this->get(UrlRepository::class);
-    $urls = $urlRepository->getEntities(); // асс массив всех url
-    //dump($urls);
+    // получаем асс массив всех url
+    $urls = $urlRepository->getEntities(); 
 
     $checksRepository = $this->get(UrlChecksRepository::class);
-    //$checks = $checksRepository->getEntities(); // асс массив всех checks
 
     $updatedUrls = array_map(
         function ($url) use ($checksRepository) {

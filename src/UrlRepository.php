@@ -15,14 +15,11 @@ class UrlRepository
     {
         $urls = [];
         $sql = "SELECT * FROM urls";
-        //$stmt = $this->conn->query($sql);
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
 
         while ($row = $stmt->fetch()) {
-            // $url = Url::fromArray([$row['name'], $row['created_at']]);
-            // $url->setId($row['id']);
             $url = ['id' => $row['id'], 'name' => $row['name'], 'created_at' => $row['created_at']];
             $urls[] = $url;
         }
@@ -36,8 +33,6 @@ class UrlRepository
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
         if ($row = $stmt->fetch()) { // $row - асс массив либо false
-            // $url = Url::fromArray([$row['name'], $row['created_at']]);
-            // $url->setId($row['id']);
             $url = ['id' => $row['id'], 'name' => $row['name'], 'created_at' => $row['created_at']];
             return $url;
         }

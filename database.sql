@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS url_checks (
     h1 VARCHAR(255) NULL,
     title TEXT NULL,
     description TEXT,
-    created_at TIMESTAMP NOT NULL
+    created_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (url_id) REFERENCES urls(id) ON DELETE CASCADE
 );
