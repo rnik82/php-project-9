@@ -77,7 +77,9 @@ class UrlChecksRepository
     {
         $url_checks = [];
         $sql = "SELECT * FROM url_checks";
-        $stmt = $this->conn->query($sql);
+        //$stmt = $this->conn->query($sql);
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
         while ($row = $stmt->fetch()) {
             $check = [
                 'id' => $row['id'],

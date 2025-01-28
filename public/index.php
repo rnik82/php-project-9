@@ -105,7 +105,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
         $urlRepository->save($newUrl);
 
         $this->get('flash')->addMessage('success', "Страница успешно добавлена");
-        $id = $newUrl->getId();
+        $id = (string)$newUrl->getId();
 
         return $response->withRedirect($router->urlFor('urls.show', ['id' => $id]));
     }
@@ -114,7 +114,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
     $errors = $validator->errors();
 
     // ["CurrentUrl is required", "CurrentUrl is not a valid URL"]
-    $errorMessages = $errors['currentUrl'];
+    $errorMessages = $errors['currentUrl'] ?? ["currentUrl" => []];
 
     $errorMessagesRu[0] = $errorMessages[0] === 'CurrentUrl is required'
         ? 'URL не должен быть пустым' : 'Некорректный URL';

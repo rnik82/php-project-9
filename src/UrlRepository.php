@@ -15,7 +15,10 @@ class UrlRepository
     {
         $urls = [];
         $sql = "SELECT * FROM urls";
-        $stmt = $this->conn->query($sql);
+        //$stmt = $this->conn->query($sql);
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
 
         while ($row = $stmt->fetch()) {
             // $url = Url::fromArray([$row['name'], $row['created_at']]);
