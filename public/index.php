@@ -15,6 +15,7 @@ use Dotenv\Dotenv;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use DiDom\Document;
+
 //use Illuminate\Support;
 //use Slim/Middleware/methodOverrideiddleware
 
@@ -28,7 +29,7 @@ $dotenv->safeLoad();
 // Создаем контейнер
 $container = new Container();
 
-// Те объекты, кот. мы кладем в контейнер на этом этапе (renderer, flash и  т.д.) мы затем 
+// Те объекты, кот. мы кладем в контейнер на этом этапе (renderer, flash и  т.д.) мы затем
 // можем использовать в коде таким обр. - $this->get('renderer')->...
 $container->set('renderer', function () {
     // Параметром передается базовая директория, в которой будут храниться шаблоны
@@ -103,7 +104,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
         // Если страницы нет, то сохраняем ее в Url репозитории и затем редирект
         $created_at = Carbon::now();
         $newUrl = Url::fromArray([$normalisedName, $created_at]);
-        $urlRepository->save($newUrl); 
+        $urlRepository->save($newUrl);
 
         $this->get('flash')->addMessage('success', "Страница успешно добавлена");
         $id = (string)$newUrl->getId();
@@ -175,7 +176,6 @@ $app->post(
         try {
             $res = $client->request('GET', $urlName);
         } catch (ConnectException $e) {
-
             $flashMessage = ['warning'
                 => ['Произошла ошибка при проверке, не удалось подключиться']];
 
@@ -219,7 +219,7 @@ $app->get('/urls', function ($request, $response) {
 
     $urlRepository = $this->get(UrlRepository::class);
     // получаем асс массив всех url
-    $urls = $urlRepository->getEntities(); 
+    $urls = $urlRepository->getEntities();
 
     $checksRepository = $this->get(UrlChecksRepository::class);
 
