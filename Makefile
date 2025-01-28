@@ -2,7 +2,7 @@ PORT ?= 8000
 start: # Cтарт проекта. Команда запускает веб сервер по адресу http://0.0.0.0:8000 если в переменных окружения не указан порт (он нужен для деплоя приложения)
 	PHP_CLI_SERVER_WORKERS=5 php -S 0.0.0.0:$(PORT) -t public
 
-check: # команда для проверки локално на localhost:8080
+check: # команда для локалного запуска на localhost:8080
 	php -S localhost:8080 -t public public/index.php
 
 install: # команда полезна при первом клонировании репозитория (или после удаления зависимостей)
@@ -14,20 +14,10 @@ update: # обновить зависимости
 validate: # проверяет файл composer.json на ошибки
 	composer validate
 
-lint: # убрал tests после src  в первой строке
+lint: # запуск линтера phpstan
 	composer exec --verbose phpcs -- --standard=PSR12 src public
 	composer exec --verbose phpstan
 
-lint-fix:
+lint-fix: # исправить ошибки линтера
 	composer exec --verbose phpcbf -- --standard=PSR12 src public
 
-test:
-	composer exec --verbose phpunit tests
-
-test-coverage:
-	XDEBUG_MODE=coverage composer exec --verbose phpunit tests -- --coverage-clover build/logs/clover.xml
-
-test-coverage-text:
-	XDEBUG_MODE=coverage composer exec --verbose phpunit tests -- --coverage-text
-
-#.PHONY: tests
