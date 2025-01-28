@@ -163,18 +163,32 @@ $app->post(
 
         $client = new Client();
 
+        $checksRepository = $this->get(UrlChecksRepository::class);
+
+
         try {
             $res = $client->request('GET', $urlName);
         } catch (ConnectException $e) {
             $this->get('flash')->addMessage(
                 'warning', 'Произошла ошибка при проверке, не удалось подключиться'
             );
-            return $response
-                ->withRedirect($router->urlFor('urls.show', ['id' => $url_id]));
-            //return $response->withStatus(422);
+            $messages = $this->get('flash')->getMessages();
+            $checks = $checksRepository->findChecksByUrlId($url_id);
+
+            $params = [
+                'url' => $url,
+                'checks' => $checks,
+                'flash' => $messages
+            ];
+
+            return $this->get('renderer')->render($response->withStatus(422), 'url.phtml', $params); //->withStatus(422)
+            // return $response
+            //     ->withRedirect($router->urlFor('urls.show', ['id' => $url_id]), 422);
             //echo "Connect error: " . $e->getMessage();
         }
+
         $status_code = $res->getStatusCode();
+        //dump($status_code);
         $html = (string) $res->getBody();
 
         $document = new Document($html);
@@ -185,7 +199,7 @@ $app->post(
             $document->find('meta[name=description][content]::attr(content)')
         )[0];
 
-        $checksRepository = $this->get(UrlChecksRepository::class);
+        //$checksRepository = $this->get(UrlChecksRepository::class);
 
         $newCheck = Check::fromArray( // получаем объект Check при каждом нажатии "Запустить проверку"
             [$url_id, $created_at, $status_code, $h1, $title, $description]

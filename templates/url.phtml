@@ -3,7 +3,9 @@
 <?= $this->fetch('header.phtml') ?>
 
 <?php if (count($flash) > 0) : ?>
-    <ul class="alert alert-success" style="list-style-type: none">
+    <ul class="alert 
+    <?= array_key_first($flash) === 'success' ? 'alert-success' : 'alert-danger'; ?>"
+    style="list-style-type: none">
     <?php foreach ($flash as $messages) : ?>
         <?php foreach ($messages as $message) : ?>
             <li><?= $message ?></li>
