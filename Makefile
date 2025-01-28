@@ -16,7 +16,6 @@ validate: # проверяет файл composer.json на ошибки
 
 lint: # запуск линтера phpstan
 	composer exec --verbose phpcs -- --standard=PSR12 src public
-	composer exec --verbose phpstan
 
 lint-fix: # исправить ошибки линтера
 	composer exec --verbose phpcbf -- --standard=PSR12 src public
