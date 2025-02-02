@@ -1,34 +1,20 @@
-<html lang="en">
+<?= $this->fetch('header.phtml') ?>
 
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, 
-									initial-scale=1.0" />
-	<title>500 Error</title>
-	<link href=
-"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-		rel="stylesheet" />
-	<style>
-		body,
-		html {
-			height: 100%;
-		}
-	</style>
-</head>
+<!--<div class="alert alert-warning" role="alert">
+    Проверка была выполнена успешно, но сервер ответил c ошибкой
+</div> -->
 
-<body class="d-flex justify-content-top 
-				align-items-top">
-	<div class="col-md-12 text-center">
-		<h1>500</h1>
-		<h2>Server Error</h2>
-		<p>
-            The server encountered an internal error or misconfiguration 
-            and was unable to complete your request.
-		</p>
-        <!--<a href="http://localhost:8000/">
-			Go to Home
-		</a>-->
-	</div>
-</body>
+<main class="flex-grow-1">
+    <div class="container-lg mt-3">
+        <h1>Упс, что-то пошло не так</h1>
+        <div class="row row-cols-1 row-cols-lg-2 align-items-lg-center">
+			<div class="col">
+				<h2 class="h2 mb-4">
+					Ошибка 500
+				</h2>
+			</div>
+		</div>
+    </div>
+</main>
 
-</html>
+<?= $this->fetch('footer.phtml') ?>

@@ -189,6 +189,11 @@ $app->post(
             // $flashMessage = ['warning'
             //     => ['Проверка была выполнена успешно, но сервер ответил c ошибкой']];
             return $this->get('renderer')->render($response->withStatus(500), '500.phtml');
+        } catch (RequestException $e) {
+            // Обработка серверных исключений (ошибки 5xx)
+            // $flashMessage = ['warning'
+            //     => ['Проверка была выполнена успешно, но сервер ответил c ошибкой']];
+            return $this->get('renderer')->render($response->withStatus(500), '500.phtml');
         }
 
         // catch (ConnectException $e) {

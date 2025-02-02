@@ -26,5 +26,3 @@ make install
 make start
 ```
 Open in browser: http://localhost:8000
-
-### The link to the domain
