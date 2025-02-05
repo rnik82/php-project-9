@@ -182,7 +182,7 @@ $app->post(
             $status_code = $res->getStatusCode();
             $html = (string) $res->getBody();
             $document = new Document($html);
-    
+
             // Получаем содержимое h1, title, content (description)
             $h1 = optional($document->find('h1::text'))[0];
             $title = optional($document->find('title::text'))[0];
@@ -190,9 +190,9 @@ $app->post(
                 $document->find('meta[name=description][content]::attr(content)')
             )[0];
             // получаем объект Check ($newCheck) при каждом нажатии "Запустить проверку"
-            
-    
-            $this->get('flash')->addMessage('success', 'Страница успешно проверена');            
+
+
+            $this->get('flash')->addMessage('success', 'Страница успешно проверена');
         } catch (RequestException $e) {
             // https://avito.com, ошибку 500 отдал сервер который мы опрашиваем - записываес код в БД
             $status_code = '500';
