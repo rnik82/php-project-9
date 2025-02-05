@@ -175,63 +175,50 @@ $app->post(
         $client = new Client();
 
         $checksRepository = $this->get(UrlChecksRepository::class);
-        $checks = $checksRepository->findChecksByUrlId($url_id);
 
         try {
-            $res = $client->request('GET', $urlName);
-        } catch (ConnectException $e) {
-            // Обработка клиентских исключений (ошибки 4xx)
-            // $flashMessage = ['warning'
-            //     => ['Произошла ошибка при проверке, не удалось подключиться']];
-            return $this->get('renderer')->render($response->withStatus(404), '404.phtml');
-        } catch (ServerException $e) {
-            // Обработка серверных исключений (ошибки 5xx)
-            // $flashMessage = ['warning'
-            //     => ['Проверка была выполнена успешно, но сервер ответил c ошибкой']];
-            return $this->get('renderer')->render($response->withStatus(500), '500.phtml');
+            $res = $client->request('GET', $urlName, ['http_errors' => false]);
+
+            $status_code = $res->getStatusCode();
+            $html = (string) $res->getBody();
+            $document = new Document($html);
+    
+            // Получаем содержимое h1, title, content (description)
+            $h1 = optional($document->find('h1::text'))[0];
+            $title = optional($document->find('title::text'))[0];
+            $description = optional(
+                $document->find('meta[name=description][content]::attr(content)')
+            )[0];
+            // получаем объект Check ($newCheck) при каждом нажатии "Запустить проверку"
+            
+    
+            $this->get('flash')->addMessage('success', 'Страница успешно проверена');            
         } catch (RequestException $e) {
-            // Обработка серверных исключений (ошибки 5xx)
-            // $flashMessage = ['warning'
-            //     => ['Проверка была выполнена успешно, но сервер ответил c ошибкой']];
+            // https://avito.com, ошибку 500 отдал сервер который мы опрашиваем - записываес код в БД
+            $status_code = '500';
+            $h1 = $title = $description = null;
+
+            $this->get('flash')
+                ->addMessage('warning', 'Проверка была выполнена успешно, но сервер ответил c ошибкой');
+        } catch (ConnectException $e) {
+            // https://wqdqwdqwdqwdwdq.wdq, http://localhost
+            // предупредить пользователя и записать в БД статус (ошибки 4xx)
+
+            $status_code = '404';
+            $h1 = $title = $description = null;
+            $this->get('flash')
+                ->addMessage('warning', 'Произошла ошибка при проверке, не удалось подключиться');
+        } catch (ServerException $e) {
+            // https://mock.httpstatus.io/500, ошибку 500 отдал наш сервер,
+            // если например в базу записать не смогли или еще что нибудь - обрабатываем
+
             return $this->get('renderer')->render($response->withStatus(500), '500.phtml');
         }
-
-        // catch (ConnectException $e) {
-        //     dump($e->getMessage());
-        //     $flashMessage = ['warning'
-        //         => ['Произошла ошибка при проверке, не удалось подключиться']];
-
-        //     $checks = $checksRepository->findChecksByUrlId($url_id);
-
-        //     $params = [
-        //         'url' => $url,
-        //         'checks' => $checks,
-        //         'flash' => $flashMessage,
-        //     ];
-
-        //     return $this->get('renderer')->render($response, 'url.phtml', $params);
-        // }
-
-        $status_code = $res->getStatusCode();
-        $html = (string) $res->getBody();
-
-        $document = new Document($html);
-
-        $h1 = optional($document->find('h1::text'))[0];
-        $title = optional($document->find('title::text'))[0];
-        $description = optional(
-            $document->find('meta[name=description][content]::attr(content)')
-        )[0];
-
-        // получаем объект Check ($newCheck) при каждом нажатии "Запустить проверку"
         $newCheck = Check::fromArray(
             [$url_id, $created_at, $status_code, $h1, $title, $description]
         );
-
+        // записываем в url_checks
         $checksRepository->save($newCheck);
-
-        $this->get('flash')->addMessage('success', 'Страница успешно проверена');
-
         return $response->withRedirect($router->urlFor('urls.show', ['id' => $url_id]));
     }
 );
