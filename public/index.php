@@ -189,10 +189,13 @@ $app->post(
             $description = optional(
                 $document->find('meta[name=description][content]::attr(content)')
             )[0];
-            // получаем объект Check ($newCheck) при каждом нажатии "Запустить проверку"
-
 
             $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+        } catch (ServerException $e) {
+            // https://mock.httpstatus.io/500, ошибку 500 отдал наш сервер,
+            // если например в базу записать не смогли или еще что нибудь - обрабатываем
+
+            return $this->get('renderer')->render($response->withStatus(500), '500.phtml');
         } catch (RequestException $e) {
             // https://avito.com, ошибку 500 отдал сервер который мы опрашиваем - записываес код в БД
             $status_code = '500';
@@ -208,11 +211,6 @@ $app->post(
             $h1 = $title = $description = null;
             $this->get('flash')
                 ->addMessage('warning', 'Произошла ошибка при проверке, не удалось подключиться');
-        } catch (ServerException $e) {
-            // https://mock.httpstatus.io/500, ошибку 500 отдал наш сервер,
-            // если например в базу записать не смогли или еще что нибудь - обрабатываем
-
-            return $this->get('renderer')->render($response->withStatus(500), '500.phtml');
         }
         $newCheck = Check::fromArray(
             [$url_id, $created_at, $status_code, $h1, $title, $description]
