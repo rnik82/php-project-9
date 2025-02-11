@@ -16,19 +16,14 @@ final class Connection
     public function create(string $url): \PDO
     {
         $databaseUrl = parse_url($url);
-        //dump($databaseUrl);
-        $username = $databaseUrl['user']; // username
-        $password = $databaseUrl['pass']; // password
-        $host = $databaseUrl['host']; // localhost
-        //$port = $databaseUrl['port']; // 5432
-        $dbName = ltrim($databaseUrl['path'], '/'); // dbname
+        $username = $databaseUrl['user'];
+        $password = $databaseUrl['pass'];
+        $host = $databaseUrl['host'];
+        $dbName = ltrim($databaseUrl['path'], '/');
 
-        // подключение к базе данных postgresql
-        // sprintf вернет строку с подставленными параметрами
         $conStr = sprintf(
-            "pgsql:host=%s;dbname=%s;user=%s;password=%s", // port=%d;
+            "pgsql:host=%s;dbname=%s;user=%s;password=%s",
             $host,
-            //$port,
             $dbName,
             $username,
             $password

@@ -5,20 +5,20 @@ namespace Hexlet\Code;
 class Check
 {
     private ?int $id = null;
-    private ?int $url_id = null;
-    private ?string $status_code = null;
+    private ?int $urlId = null;
+    private ?string $statusCode = null;
     private ?string $h1 = null;
     private ?string $title = null;
     private ?string $description = null;
-    private ?string $created_at = null;
+    private ?string $createdAt = null;
 
     public static function fromArray(array $checkData): Check
     {
-        [$url_id, $created_at, $status_code, $h1, $title, $description] = $checkData;
+        [$urlId, $createdAt, $statusCode, $h1, $title, $description] = $checkData;
         $check = new Check();
-        $check->setUrlId($url_id);
-        $check->setCreatedAt($created_at);
-        $check->setStatusCode($status_code);
+        $check->setUrlId($urlId);
+        $check->setCreatedAt($createdAt);
+        $check->setStatusCode($statusCode);
         $check->setH1($h1);
         $check->setTitle($title);
         $check->setDescription($description);
@@ -33,17 +33,17 @@ class Check
 
     public function getUrlId(): ?string
     {
-        return $this->url_id;
+        return $this->urlId;
     }
 
     public function getCreatedAt(): ?string
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
     public function getStatusCode(): ?string
     {
-        return $this->status_code;
+        return $this->statusCode;
     }
 
     public function getDescription(): ?string
@@ -66,14 +66,14 @@ class Check
         $this->id = $id;
     }
 
-    public function setUrlId(int $url_id): void
+    public function setUrlId(int $urlId): void
     {
-        $this->url_id = $url_id;
+        $this->urlId = $urlId;
     }
 
-    public function setStatusCode(string $status_code): void
+    public function setStatusCode(string $statusCode): void
     {
-        $this->status_code = $status_code;
+        $this->statusCode = $statusCode;
     }
 
     public function setH1(?string $h1): void
@@ -91,8 +91,8 @@ class Check
         $this->description = $description;
     }
 
-    public function setCreatedAt(string $created_at): void
+    public function setCreatedAt(string $createdAt): void
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
     }
 }
