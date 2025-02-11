@@ -168,7 +168,6 @@ $app->post(
 
             $this->get('flash')->addMessage('success', 'Страница успешно проверена');
         } catch (ServerException $e) {
-
             return $this->get('renderer')->render($response->withStatus(500), '500.phtml');
         } catch (RequestException $e) {
             $status_code = '500';
